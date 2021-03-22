@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Datos
+from models import db, User,TODOLis
 #from models import Person
 
 app = Flask(__name__)
@@ -39,18 +39,17 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
-@app.route('/get_Datos', methods=['GET'])
-def get_tod():
+@app.route('/get_todolist', methods=['GET'])
+def get_TODO():
 
-    # get all the favorites
-    query = Datos.query.all()
+    query = TODOLis.query.all()
 
     # map the results and your list of people  inside of the all_people variable
     results = list(map(lambda x: x.serialize(), query))
-
+    
     return jsonify(results), 200
-
-@app.route('/add_Datos', methods=['POST'])
+# this only runs if `$ python src/main.py` is executed
+@app.route('/add_todolist', methods=['POST'])
 def add_tod():
 
     # recibir info del request
@@ -58,26 +57,27 @@ def add_tod():
     print(request_body)
 
 
-    tod = Datos(done=request_body["done"], label=request_body["label"])
+    tod = TODOLis(done=request_body["done"],label=request_body["label"])
     db.session.add(tod)
     db.session.commit()
 
     return jsonify("All good"), 200
 
-@app.route('/del_Datos/<int:tid>', methods=['DELETE'])
-def del_tod(tid):
+@app.route('/del_todolist/<int:position>', methods=['DELETE'])
+def del_tod(position):
 
     # recibir info del request
     
-    tod = Datos.query.get(tid)
+    tod = TODOLis.query.get(position)
     if tod is None:
-        raise APIException('Label not found', status_code=404)
+        raise APIException('TodoList not found', status_code=404)
 
     db.session.delete(tod)
+
     db.session.commit()
 
     return jsonify("All good"), 200
-# this only runs if `$ python src/main.py` is executed
+
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
